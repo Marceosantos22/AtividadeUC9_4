@@ -7,6 +7,12 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Scanner;
 
 public class Principal extends javax.swing.JFrame {
 
@@ -16,26 +22,29 @@ public class Principal extends javax.swing.JFrame {
 
 	private List<DadosPressao> DadosPressaoList = new ArrayList<>();
 
+	private String caminho = "C://ArquivoAferimento.txt";
+
 	public Principal() {
-		
+
 		initComponents();
 		setLocationRelativeTo(null);
+		atualizalistTXT();
 		geraAcessbilidade();
 		bntSalvar.setToolTipText("Salvar o registro de Aferimento de Pressão\n ou Alt + S");
-		
+
 		txtPressaoSistolica.setToolTipText("Informe a Pressão Diastólica no format.:\n"
-		 + "Ex: Se a Pressão é 12 digite (120)");
-		
+				  + "Ex: Se a Pressão é 12 digite (120)");
+
 		txtPressaoSistolica.setToolTipText("Informe a Pressão Diastólica no format.:\n"
-		 + "Ex: Se a Pressão é 8 digite (80)");
-		
+				  + "Ex: Se a Pressão é 8 digite (80)");
+
 	}
-	 public void geraAcessbilidade(){
-		 
-		 bntSalvar.setMnemonic(KeyEvent.VK_S);
-		
-	 }
-	 
+
+	public void geraAcessbilidade() {
+
+		bntSalvar.setMnemonic(KeyEvent.VK_S);
+
+	}
 
 	@SuppressWarnings("unchecked")
    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -240,7 +249,7 @@ public class Principal extends javax.swing.JFrame {
 
 			getDadosPressao();
 			inserirDados(getDadosPressao());
-			
+
 			limparCampos();
 
 		}
@@ -248,18 +257,11 @@ public class Principal extends javax.swing.JFrame {
    }//GEN-LAST:event_bntSalvarActionPerformed
 
    private void bntSalvarKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_bntSalvarKeyPressed
-      // TODO add your handling code here:
+
    }//GEN-LAST:event_bntSalvarKeyPressed
 
-	/**
-	 * @param args the command line arguments
-	 */
 	public static void main(String args[]) {
-		/* Set the Nimbus look and feel */
-		//<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-		/* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-		 */
+
 		try {
 			for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
 				if ("Nimbus".equals(info.getName())) {
@@ -278,7 +280,6 @@ public class Principal extends javax.swing.JFrame {
 		}
 		//</editor-fold>
 
-		/* Create and display the form */
 		java.awt.EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				new Principal().setVisible(true);
@@ -403,7 +404,40 @@ public class Principal extends javax.swing.JFrame {
 
 	}
 
+	public void atualizalistTXT() {
+
+		try {
+
+			File obj = new File(this.caminho);
+			Scanner Reader = new Scanner(obj);
+			while (Reader.hasNextLine()) {
+				String data = Reader.nextLine();
+
+				List<String> lineData = Arrays.asList(data.split(";"));
+
+				DadosPressao dadosPressao = new DadosPressao();
+				dadosPressao.setData(lineData.get(0));
+				dadosPressao.setHora(lineData.get(1));
+				dadosPressao.setPressaoSistolica(Integer.parseInt(lineData.get(2)));
+				dadosPressao.setPressaoDiastolica(Integer.parseInt(lineData.get(3)));
+				dadosPressao.setEmEstresse(lineData.get(4));
+
+				DadosPressaoList.add(dadosPressao);
+
+			}
+			atualizaTabela();
+			Reader.close();
+
+		} catch (FileNotFoundException e) {
+
+			System.out.println("Ocorreu algum erro." + e.getMessage());
+		}
+
+	}
+
 	private void atualizaTabela() {
+
+		String DadosTXT = "";
 
 		if (!DadosPressaoList.isEmpty()) {
 
@@ -419,6 +453,9 @@ public class Principal extends javax.swing.JFrame {
 					String.valueOf(dadosPressao.getPressaoDiastolica()), dadosPressao.getEmEstresse()};
 
 				tableModel.addRow(rowData);
+				DadosTXT += dadosPressao.getData() + ";" + dadosPressao.getHora() + ";"
+						  + String.valueOf(dadosPressao.getPressaoSistolica()) + ";"
+						  + String.valueOf(dadosPressao.getPressaoDiastolica()) + ";" + dadosPressao.getEmEstresse() + "\n";
 			}
 
 			jTable_Pressao.setModel(tableModel);
@@ -429,6 +466,15 @@ public class Principal extends javax.swing.JFrame {
 			jTable_Pressao.setModel(tableModel);
 
 		}
+		try {
+			FileWriter Writer = new FileWriter(this.caminho);
+			Writer.write(DadosTXT);
+			Writer.close();
+			
+		} catch (IOException e) {
+			System.out.println("Ocorreu algum erro.");
+		}
+
 	}
 
 	private void limparCampos() {
@@ -437,13 +483,13 @@ public class Principal extends javax.swing.JFrame {
 		txtHora.setText("");
 		txtPressaoSistolica.setText("");
 		txtPressaoDiastolica.setText("");
-		
-		if(jcbEstresse.isSelected()){
-			
+
+		if (jcbEstresse.isSelected()) {
+
 			jcbEstresse.setSelected(false);
-			
+
 		}
 
 	}
-	
+
 }
